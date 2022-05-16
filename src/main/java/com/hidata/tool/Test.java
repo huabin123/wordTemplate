@@ -61,16 +61,30 @@ public class Test {
 		table2.add(map5);
 		table2.add(map6);
 
+		List<Map<String, Object>> table3 = new ArrayList<Map<String, Object>>();
+		Map<String, Object> map7=new HashMap<>();
+		map7.put("asset_type", "现金及银行存款");
+		map7.put("a_money", "123");
+		map7.put("a_bili", "10%");
+		Map<String, Object> map8=new HashMap<>();
+		map8.put("asset_type", "现金及银行存款");
+		map8.put("a_money", "123");
+		map8.put("a_bili", "10%");
+		table3.add(map7);
+		table3.add(map8);
+
 
 
 		parametersMap.put("userName", "JUVENILESS");
 		parametersMap.put("time", "2022-03-24");
 		parametersMap.put("sum", "3");
 		parametersMap.put("year", "2022");
+		parametersMap.put("PROD_CODE", "123");
 
 
 		wordDataMap.put("table1", table1);
 		wordDataMap.put("table2", table2);
+		wordDataMap.put("table3", table3);
 		wordDataMap.put("parametersMap", parametersMap);
 
 //		File file = new File("E:\\workspace\\project\\playground\\wordTemplate\\doc\\模板.docx");//改成你本地文件所在目录
