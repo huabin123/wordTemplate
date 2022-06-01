@@ -7,6 +7,8 @@
  */
 package com.hidata.tool;
 
+import org.apache.poi.xwpf.usermodel.*;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,32 +18,14 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.poi.xwpf.usermodel.BodyElementType;
-import org.apache.poi.xwpf.usermodel.IBodyElement;
-import org.apache.poi.xwpf.usermodel.PositionInParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-import org.apache.poi.xwpf.usermodel.XWPFRun;
-import org.apache.poi.xwpf.usermodel.XWPFTable;
-import org.apache.poi.xwpf.usermodel.XWPFTableCell;
-import org.apache.poi.xwpf.usermodel.XWPFTableRow;
-
 /**
  *
- * 对docx文件中的文本及表格中的内容进行替换 --模板仅支持对 {key} 标签的替换
- *
- * @ClassName: WordTemplate
- * @Description: TODO(!!!使用word2013 docx文件)
- * @author Juveniless
- * @date: 2017年11月27日 下午3:25:56
- * <br>(1)word模板注意页边距的问题，存在问题：比如页边距默认为3cm，画表格时，仍然可以通过
- * 拖拽，把表格边框拖动到看起来就像页边距只有1cm的样子，但是实际上此时页边距还是3cm，生成的
- * word报表的页边距还是会按照3cm来生成。解决办法，在word文件里，设置好页边距，如果需要表格
- * 两边页边距很窄，需要在word里设置页边距窄一点，而不是直接拖动表格边框来实现。
+ * 在表格比较多的时候，每个列都需要使用{name}标记会比较麻烦，
+ * 基于WordTemplate，实现一个占位符填充整个单元格
  *
  */
 
-public class WordTemplate {
+public class WordTemplateSimple {
 
 	private XWPFDocument document;
 
@@ -63,7 +47,7 @@ public class WordTemplate {
 	 * @throws IOException
 	 *
 	 */
-	public WordTemplate(InputStream inputStream) throws IOException {
+	public WordTemplateSimple(InputStream inputStream) throws IOException {
 		document = new XWPFDocument(inputStream);
 	}
 
@@ -110,46 +94,52 @@ public class WordTemplate {
 		for (int a = 0; a < templateBodySize; a++) {
 			IBodyElement body = bodyElements.get(a);
 			if (BodyElementType.TABLE.equals(body.getElementType())) {// 处理表格
-				XWPFTable table = body.getBody().getTableArray(curT);
 
 				List<XWPFTable> tables = body.getBody().getTables();
-				table = tables.get(curT);
+				XWPFTable table = tables.get(curT);
 				if (table != null) {
 
 					// 处理表格
-					List<XWPFTableCell> tableCells = table.getRows().get(0).getTableCells();// 获取到模板表格第一行，用来判断表格类型
 					String tableText = table.getText();// 表格中的所有文本
 
-					if (tableText.indexOf("##{foreach") > -1) {
-						// 查找到##{foreach标签，该表格需要处理循环
-						if (tableCells.size() != 2
-								|| tableCells.get(0).getText().indexOf("##{foreach") < 0
-								|| tableCells.get(0).getText().trim().length() == 0) {
-							System.out
-									.println("文档中第"
-											+ (curT + 1)
-											+ "个表格模板错误,模板表格第一行需要设置2个单元格，"
-											+ "第一个单元格存储表格类型(##{foreachTable}## 或者 ##{foreachTableRow}##)，第二个单元格定义数据源。");
-							return;
-						}
+					if (tableText.indexOf("$singleTable") > -1) {
+						// 取出$$中间的table
+						String regEx = "\\$(.*?)\\$";
+						Pattern pattern = Pattern.compile(regEx);
+						Matcher matcher = pattern.matcher(tableText);
+						if (matcher.find()) {
+							String dataSource = matcher.group(1);
+							@SuppressWarnings("unchecked")
+							List<String> tableDataList = (List<String>) dataMap
+									.get(dataSource);
 
-						String tableType = tableCells.get(0).getText();
-						String dataSource = tableCells.get(1).getText();
-						System.out.println("读取到数据源："+dataSource);
-						if (!dataMap.containsKey(dataSource)) {
-							System.out.println("文档中第" + (curT + 1) + "个表格模板数据源缺失");
-							return;
-						}
-						@SuppressWarnings("unchecked")
-						List<Map<String, Object>> tableDataList = (List<Map<String, Object>>) dataMap
-								.get(dataSource);
-						if ("##{foreachTable}##".equals(tableType)) {
-							// System.out.println("循环生成表格");
-							addTableInDocFooter(table, tableDataList, parametersMap, 1);
+							List<XWPFTableRow> templateTableRows = table.getRows();// 获取模板表格所有行
+							// 创建新表格,行数为元数据行数，列数为2，不填的话默认是一行一列
+							XWPFTable newCreateTable = document.createTable();
+							for (int i = 0; i < templateTableRows.size(); i++) {
+								XWPFTableRow newCreateRow = newCreateTable.createRow();
+								CopyTableRow(newCreateRow, templateTableRows.get(i));// 复制模板行文本和样式到新行
+							}
+							document.createParagraph();// 添加回车换行
 
-						} else if ("##{foreachTableRow}##".equals(tableType)) {
-							// System.out.println("循环生成表格内部的行");
-							addTableInDocFooter(table, tableDataList, parametersMap, 2);
+							// 往下填充数据
+							List<XWPFTableRow> rows = newCreateTable.getRows();
+
+//							for (XWPFTableRow xWPFTableRow : rows ) {
+//								List<XWPFTableCell> tableCells = xWPFTableRow.getTableCells();
+//								for (XWPFTableCell xWPFTableCell : tableCells ) {
+//									List<XWPFParagraph> paragraphs2 = xWPFTableCell.getParagraphs();
+//									for (XWPFParagraph xWPFParagraph : paragraphs2) {
+//										replaceParagraph(xWPFParagraph, parametersMap);
+//									}
+//								}
+//							}
+
+
+//							for (int i = 0; i < rows.size()-1; i++) {
+//								rows.get(i).getTableCells().get(1).setText(tableDataList.get(i));
+//							}
+
 						}
 
 					} else if (tableText.indexOf("{") > -1) {
@@ -162,8 +152,7 @@ public class WordTemplate {
 					curT++;
 
 				}
-			}
-			else if (BodyElementType.PARAGRAPH.equals(body.getElementType())) {// 处理段落
+			} else if (BodyElementType.PARAGRAPH.equals(body.getElementType())) {// 处理段落
 				// System.out.println("获取到段落");
 				XWPFParagraph ph = body.getBody().getParagraphArray(curP);
 				if (ph != null) {
@@ -530,7 +519,6 @@ public class WordTemplate {
 	 *            模板段落
 	 *
 	 */
-
 	private void copyParagraph(XWPFParagraph newParagraph, XWPFParagraph templateParagraph) {
 		// 设置段落样式
 		newParagraph.getCTP().setPPr(templateParagraph.getCTP().getPPr());
@@ -545,6 +533,7 @@ public class WordTemplate {
 		}
 
 	}
+
 	/**
 	 * 复制文本节点run
 	 * @author Juveniless

@@ -16,8 +16,6 @@ public class Test {
 		Map<String, Object> wordDataMap = new HashMap<String, Object>();// 存储报表全部数据
 		Map<String, Object> parametersMap = new HashMap<String, Object>();// 存储报表中不循环的数据
 
-
-
 		List<Map<String, Object>> table1 = new ArrayList<Map<String, Object>>();
 		Map<String, Object> map1=new HashMap<>();
 		map1.put("name", "张三");
@@ -88,7 +86,8 @@ public class Test {
 		wordDataMap.put("parametersMap", parametersMap);
 
 //		File file = new File("E:\\workspace\\project\\playground\\wordTemplate\\doc\\模板.docx");//改成你本地文件所在目录
-		File file = new File("E:\\workspace\\project\\playground\\wordTemplate\\doc\\demoFile.docx");//改成你本地文件所在目录
+//		File file = new File("E:\\workspace\\project\\playground\\wordTemplate\\doc\\demoFile.docx");//改成你本地文件所在目录
+		File file = new File("E:\\workspace\\project\\playground\\wordTemplate\\doc\\StringModeSourceFile.docx");//改成你本地文件所在目录
 
 
 		// 读取word模板
@@ -101,7 +100,8 @@ public class Test {
 
 		//生成文件
 //		File outputFile=new File("E:\\workspace\\project\\playground\\wordTemplate\\doc\\输出.docx");//改成你本地文件所在目录
-		File outputFile=new File("E:\\workspace\\project\\playground\\wordTemplate\\doc\\demoFileOut.docx");//改成你本地文件所在目录
+//		File outputFile=new File("E:\\workspace\\project\\playground\\wordTemplate\\doc\\demoFileOut.docx");//改成你本地文件所在目录
+		File outputFile=new File("E:\\workspace\\project\\playground\\wordTemplate\\doc\\表样.docx");//改成你本地文件所在目录
 		FileOutputStream fos  = new FileOutputStream(outputFile);
 		template.getDocument().write(fos);
 
