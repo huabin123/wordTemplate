@@ -83,6 +83,8 @@ public class WordUtils {
         // 读取第一张配置表，保存指标，读取完成后删除第一张表
         List<Map<String, Object>> dataList = getIndexData(parametersMap);
         Map<String, Object> singleIndicatorMap = dataList.get(0);
+        singleIndicatorMap.put("D0000106001", "报告期内产品流动性平稳运行，规模保持稳定，产品管理人通过合理安排资产配置结构，保持一定比例的高流动性资产，控制资产久期、杠杆融资比例，管控产品流动性风险。");
+        singleIndicatorMap.put("CASH_MGMT_CLS_FLAG", "1");
         Map<String, Object> multiIndicatorMap = dataList.get(1);
 
         List<List> testList = new ArrayList<>();
@@ -115,7 +117,7 @@ public class WordUtils {
         multiIndicatorMap.put("D00001非标资产投资情况", testList);
 
         // 处理if endif条件，除去不需要的表格和模板
-//        removeDocumentByCondition(singleIndicatorMap);
+        removeDocumentByCondition(singleIndicatorMap);
 
         String regEx = "\\$\\{(.*?)\\}";
         Pattern pattern = Pattern.compile(regEx);
@@ -286,9 +288,6 @@ public class WordUtils {
                     ctPr.addNewVAlign().setVal(STVerticalJc.CENTER);
                     cttc.getPList().get(0).addNewPPr().addNewJc().setVal(STJc.CENTER);
 
-                    for (XWPFParagraph paragraph : tableCell.getParagraphs()) {
-                        System.out.println(paragraph.getText());
-                    }
                 }
             }
         }
@@ -551,7 +550,19 @@ public class WordUtils {
                             }
                         }
                     }else{
-                        copyParagraphInDocFooter(ph);
+                        // 由于if前都要空一行以正确识别if条件，所以如果下一个element是段落，且段落里含有if，那么本空行就不需要复制
+                        boolean copyFlag = true;
+                        IBodyElement iBodyElement = bodyElements.get(a + 1);
+                        if (BodyElementType.PARAGRAPH.equals(iBodyElement.getElementType())) {
+                            XWPFParagraph paragraph = iBodyElement.getBody().getParagraphArray(curP + 1);
+                            if (paragraph.getText().contains("IF")) {
+                                copyFlag = false;
+                            }
+                        }
+                        if (copyFlag) {
+                            copyParagraphInDocFooter(ph);
+                        }
+
                     }
                     curP++;
                 }
@@ -586,7 +597,6 @@ public class WordUtils {
             copyTableRow(newCreateRow, templateTableRows.get(i));// 复制模板行文本和样式到新行
         }
         newCreateTable.removeRow(0);// 移除多出来的第一行
-        document.createParagraph();// 添加回车换行
     }
 
     private static void copyTableRow(XWPFTableRow target, XWPFTableRow source) {
