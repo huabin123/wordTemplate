@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 
 public class WordUtils {
 
-    private static XWPFDocument document;
+    private XWPFDocument document;
 
 //    public XWPFDocument getDocument() {
 //        return document;
@@ -33,7 +33,7 @@ public class WordUtils {
 
     }
 
-    public static List<Map<String, Object>> getIndexData(Map<String, String> parametersMap){
+    public List<Map<String, Object>> getIndexData(Map<String, String> parametersMap){
         HashMap<String, String> singleIndicatorMap = new HashMap<>();
         HashMap<String, Object> multiIndicatorMap = new HashMap<>();
         List resultList = new ArrayList<>();
@@ -75,7 +75,7 @@ public class WordUtils {
         return resultList;
     }
 
-    public static ByteArrayInputStream replaceDocument(Map<String, String> parametersMap,
+    public  ByteArrayInputStream replaceDocument(Map<String, String> parametersMap,
                                                        InputStream inputStream) throws XmlException, IOException {
 
         document = new XWPFDocument(inputStream);
@@ -175,7 +175,7 @@ public class WordUtils {
         return new ByteArrayInputStream(baos.toByteArray());
     }
 
-    private static void forverseTableCells() {
+    private  void forverseTableCells() {
         for(XWPFTable table : document.getTables()) {//表格
             for(XWPFTableRow row : table.getRows()) {//行
                 for(XWPFTableCell cell : row.getTableCells()) {//单元格 : 直接cell.setText()只会把文字加在原有的后面，删除不了文字
@@ -185,7 +185,7 @@ public class WordUtils {
         }
     }
 
-    private static void addBreakInCell(XWPFTableCell cell) {
+    private  void addBreakInCell(XWPFTableCell cell) {
         if(cell.getText() != null && cell.getText().contains("\n")) {
 
             for (XWPFParagraph p : cell.getParagraphs()) {
@@ -214,7 +214,7 @@ public class WordUtils {
      * @param colStart 多维指标所在列
      * @param rowList 多维指标数据
      */
-    private static void setSFMDFUNValue(XWPFTable table, int rowStart, int colStart, List<List<String>> rowList) throws XmlException, IOException {
+    private  void setSFMDFUNValue(XWPFTable table, int rowStart, int colStart, List<List<String>> rowList) throws XmlException, IOException {
         if (rowList.size()==0) {
             // 多维指标为空，把这一行全部置空
             List<XWPFTableCell> tableCells = table.getRow(rowStart).getTableCells();
@@ -322,7 +322,7 @@ public class WordUtils {
 
     }
 
-    public static void replaceParagraph(XWPFParagraph xWPFParagraph, Map<String, Object> parametersMap) {
+    public  void replaceParagraph(XWPFParagraph xWPFParagraph, Map<String, Object> parametersMap) {
         List<XWPFRun> runs = xWPFParagraph.getRuns();
         String xWPFParagraphText = xWPFParagraph.getText();
         String regEx = "\\$\\{.+?\\}";
@@ -445,7 +445,7 @@ public class WordUtils {
 
     }
 
-    private static String getValueBykey(String key, Map<String, Object> map) {
+    private  String getValueBykey(String key, Map<String, Object> map) {
         String returnValue="";
         if (key != null) {
             try {
@@ -460,7 +460,7 @@ public class WordUtils {
         return returnValue;
     }
 
-    private static boolean isIfExists(){
+    private  boolean isIfExists(){
         List<IBodyElement> bodyElements = document.getBodyElements();// 所有对象（段落+表格）
         int templateBodySize = bodyElements.size();// 标记模板文件（段落+表格）总个数
         int curP = 0;// 当前操作段落对象的索引
@@ -481,7 +481,7 @@ public class WordUtils {
         return false;
     }
 
-    public static void removeDocumentByCondition(Map<String, Object> parametersMap){
+    public  void removeDocumentByCondition(Map<String, Object> parametersMap){
 
         while (isIfExists()){
             removeDocument(parametersMap);
@@ -490,7 +490,7 @@ public class WordUtils {
     }
 
     // 循环调用直到文档中不包含含有if的段落
-    public static void removeDocument(Map<String, Object> parametersMap) {
+    public  void removeDocument(Map<String, Object> parametersMap) {
 
         List<IBodyElement> bodyElements = document.getBodyElements();// 所有对象（段落+表格）
         int templateBodySize = bodyElements.size();// 标记模板文件（段落+表格）总个数
@@ -602,7 +602,7 @@ public class WordUtils {
         }
     }
 
-    private static void copyParagraphInDocFooter(XWPFParagraph ph){
+    private  void copyParagraphInDocFooter(XWPFParagraph ph){
         XWPFParagraph createParagraph = document.createParagraph();
         // 设置段落样式
         createParagraph.getCTP().setPPr(ph.getCTP().getPPr());
@@ -617,7 +617,7 @@ public class WordUtils {
         }
     }
 
-    private static void copyTableInDocFooter(XWPFTable templateTable){
+    private  void copyTableInDocFooter(XWPFTable templateTable){
         List<XWPFTableRow> templateTableRows = templateTable.getRows();// 获取模板表格所有行
         XWPFTable newCreateTable = document.createTable();// 创建新表格,默认一行一列
         for (int i = 0; i < templateTableRows.size(); i++) {
@@ -627,7 +627,7 @@ public class WordUtils {
         newCreateTable.removeRow(0);// 移除多出来的第一行
     }
 
-    private static void copyTableRow(XWPFTableRow target, XWPFTableRow source) {
+    private  void copyTableRow(XWPFTableRow target, XWPFTableRow source) {
 
         int tempRowCellsize = source.getTableCells().size();// 模板行的列数
         for (int i = 0; i < tempRowCellsize - 1; i++) {
@@ -641,7 +641,7 @@ public class WordUtils {
         }
     }
 
-    private static void copyTableCell(XWPFTableCell newTableCell, XWPFTableCell templateTableCell) {
+    private  void copyTableCell(XWPFTableCell newTableCell, XWPFTableCell templateTableCell) {
         // 列属性
         newTableCell.getCTTc().setTcPr(templateTableCell.getCTTc().getTcPr());
         // 删除目标 targetCell 所有文本段落
@@ -655,7 +655,7 @@ public class WordUtils {
         }
     }
 
-    private static void copyParagraph(XWPFParagraph newParagraph, XWPFParagraph templateParagraph) {
+    private  void copyParagraph(XWPFParagraph newParagraph, XWPFParagraph templateParagraph) {
         // 设置段落样式
         newParagraph.getCTP().setPPr(templateParagraph.getCTP().getPPr());
         // 添加Run标签
@@ -670,7 +670,7 @@ public class WordUtils {
 
     }
 
-    private static void copyRun(XWPFRun newRun, XWPFRun templateRun) {
+    private  void copyRun(XWPFRun newRun, XWPFRun templateRun) {
         newRun.getCTR().setRPr(templateRun.getCTR().getRPr());
         // 设置文本
         newRun.setText(templateRun.text());

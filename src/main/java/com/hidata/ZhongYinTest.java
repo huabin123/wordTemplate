@@ -18,7 +18,7 @@ public class ZhongYinTest {
 
         // 读取word模板
         FileInputStream fileInputStream = new FileInputStream(file);
-        ByteArrayInputStream arrayInputStream = WordUtils.replaceDocument(map, fileInputStream);
+        ByteArrayInputStream arrayInputStream = new WordUtils().replaceDocument(map, fileInputStream);
 
         //生成文件
         File outputFile=new File("E:\\workspace\\project\\playground\\wordTemplate\\doc\\ZhongYinOutFile.docx");//改成你本地文件所在目录
