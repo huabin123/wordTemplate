@@ -117,7 +117,7 @@ public class WordUtils {
         multiIndicatorMap.put("D00001非标资产投资情况", testList);
 
         // 处理if endif条件，除去不需要的表格和模板
-        removeDocumentByCondition(singleIndicatorMap);
+//        removeDocumentByCondition(singleIndicatorMap);
 
         String regEx = "\\$\\{(.*?)\\}";
         Pattern pattern = Pattern.compile(regEx);
@@ -133,7 +133,8 @@ public class WordUtils {
                 // 注意这里只能这么拿table，每次处理一个，因为bodyElements.size()肯定大于表数，在下面判空即可
                 XWPFTable table = tables.get(curT);
                 if (table != null) {
-                    for (int k = 0; k < table.getRows().size(); k++) {
+                    int rowSize = table.getRows().size();
+                    for (int k = 0; k < rowSize; k++) {
                         for (int l = 0; l < table.getRow(k).getTableCells().size(); l++) {
                             String cellString = table.getRow(k).getTableCells().get(l).getText();
                             if (cellString.contains("${")) {  // 说明需要替换内容
@@ -213,7 +214,7 @@ public class WordUtils {
      * @param colStart 多维指标所在列
      * @param rowList 多维指标数据
      */
-    private static void setSFMDFUNValue(XWPFTable table, int rowStart, int colStart, List<List<String>> rowList){
+    private static void setSFMDFUNValue(XWPFTable table, int rowStart, int colStart, List<List<String>> rowList) throws XmlException, IOException {
         if (rowList.size()==0) {
             // 多维指标为空，把这一行全部置空
             List<XWPFTableCell> tableCells = table.getRow(rowStart).getTableCells();
@@ -259,13 +260,14 @@ public class WordUtils {
             bBorder.setColor("000000");
 
             for (int i = 0; i < rowList.size(); i++) {
-                XWPFTableRow tableRow=table.getRow(i+rowStart)==null?table.createRow():table.getRow(i+rowStart);
-                for (int j = 0; j < rowList.get(i).size(); j++) {
-                    XWPFTableCell tableCell=tableRow.getCell(j+colStart)==null?tableRow.createCell():tableRow.getCell(j+colStart);
-                    tableCell.removeParagraph(0);
-                    String rowText = rowList.get(i).get(j);
-
-                    XWPFParagraph paragraph1 = tableCell.addParagraph();
+                XWPFTableRow tempRow = table.getRow(rowStart);
+                CTRow ctrow = CTRow.Factory.parse(tempRow.getCtRow().newInputStream());
+                XWPFTableRow newRow = new XWPFTableRow(ctrow, table);
+                for (int k = 0; k < rowList.get(i).size(); k++) {
+                    XWPFTableCell cell = newRow.getTableCells().get(k);
+                    cell.removeParagraph(0);
+                    String rowText = rowList.get(i).get(k);
+                    XWPFParagraph paragraph1 = cell.addParagraph();
 
                     if(rowText.contains("\n")) {
                         String[] text = rowText.split("\n");
@@ -279,17 +281,43 @@ public class WordUtils {
                             xx = xx + 2;
                         }
                     }else {
-                        tableCell.setText(rowText);
+                        cell.setText(rowText);
                     }
-
-                    // 设置居中
-                    CTTc cttc = tableCell.getCTTc();
-                    CTTcPr ctPr = cttc.addNewTcPr();
-                    ctPr.addNewVAlign().setVal(STVerticalJc.CENTER);
-                    cttc.getPList().get(0).addNewPPr().addNewJc().setVal(STJc.CENTER);
-
                 }
+                table.addRow(newRow, i+rowStart+1);
+
+//                XWPFTableRow tableRow=table.getRow(i+rowStart)==null?table.createRow():table.getRow(i+rowStart);
+//                for (int j = 0; j < rowList.get(i).size(); j++) {
+//                    XWPFTableCell tableCell=tableRow.getCell(j+colStart)==null?tableRow.createCell():tableRow.getCell(j+colStart);
+//                    tableCell.removeParagraph(0);
+//                    String rowText = rowList.get(i).get(j);
+//
+//                    XWPFParagraph paragraph1 = tableCell.addParagraph();
+//
+//                    if(rowText.contains("\n")) {
+//                        String[] text = rowText.split("\n");
+//                        paragraph1.insertNewRun(0).setText(text[0]);
+//
+//                        int xx = 1;
+//                        for(int p=1;p<text.length;p++){
+//                            // add break and insert new text
+//                            paragraph1.insertNewRun(xx).addBreak();//中断
+//                            paragraph1.insertNewRun(xx+1).setText(text[p]);
+//                            xx = xx + 2;
+//                        }
+//                    }else {
+//                        tableCell.setText(rowText);
+//                    }
+//
+//                    // 设置居中
+//                    CTTc cttc = tableCell.getCTTc();
+//                    CTTcPr ctPr = cttc.addNewTcPr();
+//                    ctPr.addNewVAlign().setVal(STVerticalJc.CENTER);
+//                    cttc.getPList().get(0).addNewPPr().addNewJc().setVal(STJc.CENTER);
+//
+//                }
             }
+            table.removeRow(rowStart);
         }
 
     }
