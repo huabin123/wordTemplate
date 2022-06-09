@@ -13,10 +13,7 @@ import java.io.*;
 
 public class XDocReport {
 
-    public static void main(String[] args) {
-        String outPath = "E:\\workspace\\project\\playground\\wordTemplate\\doc\\ZhongYinOutFile.docx";
-        wordConverterToPdf(outPath, outPath.replace("docx", "pdf"), "C:/Windows/Fonts/simkai.ttf", BaseFont.IDENTITY_H);
-    }
+    public XDocReport(){}
 
     /**
      * 将word文档， 转换成pdf
@@ -27,7 +24,7 @@ public class XDocReport {
      * @param target     目标输出
      * @throws Exception
      */
-    public static void wordConverterToPdf(String tmp, String target, final String fontParam1, final String fontParam2) {
+    public void wordConverterToPdf(String tmp, String target, final String fontParam1, final String fontParam2) {
         InputStream sourceStream = null;
         OutputStream targetStream = null;
         XWPFDocument doc = null;

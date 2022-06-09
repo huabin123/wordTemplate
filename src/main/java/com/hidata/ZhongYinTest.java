@@ -1,6 +1,8 @@
 package com.hidata;
 
 import com.hidata.tool.WordUtils;
+import com.hidata.tool.XDocReport;
+import com.lowagie.text.pdf.BaseFont;
 import org.apache.poi.util.IOUtils;
 import org.apache.xmlbeans.XmlException;
 
@@ -26,8 +28,9 @@ public class ZhongYinTest {
         IOUtils.closeQuietly(arrayInputStream);
 
         // word转pdf
+        String outPath = "E:\\workspace\\project\\playground\\wordTemplate\\doc\\ZhongYinOutFile.docx";
+        new XDocReport().wordConverterToPdf(outPath, outPath.replace("docx", "pdf"), "C:/Windows/Fonts/simkai.ttf", BaseFont.IDENTITY_H);
 
     }
-
 }
 
