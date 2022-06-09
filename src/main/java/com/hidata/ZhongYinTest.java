@@ -24,6 +24,9 @@ public class ZhongYinTest {
         File outputFile=new File("E:\\workspace\\project\\playground\\wordTemplate\\doc\\ZhongYinOutFile.docx");//改成你本地文件所在目录
         Files.copy(arrayInputStream, outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         IOUtils.closeQuietly(arrayInputStream);
+
+        // word转pdf
+
     }
 
 }

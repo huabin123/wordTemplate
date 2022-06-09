@@ -1,4 +1,6 @@
-package com.hidata.tool;
+package com.hidata;
+
+import com.hidata.tool.WordTemplateSimple;
 
 import java.io.File;
 import java.io.FileInputStream;

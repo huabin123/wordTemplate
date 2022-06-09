@@ -83,41 +83,27 @@ public class WordUtils {
         // 读取第一张配置表，保存指标，读取完成后删除第一张表
         List<Map<String, Object>> dataList = getIndexData(parametersMap);
         Map<String, Object> singleIndicatorMap = dataList.get(0);
-        singleIndicatorMap.put("D0000106001", "报告期内产品流动性平稳运行，规模保持稳定，产品管理人通过合理安排资产配置结构，保持一定比例的高流动性资产，控制资产久期、杠杆融资比例，管控产品流动性风险。");
-        singleIndicatorMap.put("CASH_MGMT_CLS_FLAG", "1");
         Map<String, Object> multiIndicatorMap = dataList.get(1);
-
-        List<List> testList = new ArrayList<>();
-        // 造数据
-        List<String> row0 = new ArrayList<>();
-        row0.add("阿萨德\r\n九分裤垃圾收代理费空间啊");
-        row0.add("阿萨德和房价开始大家付款哈实践课程vhajksdhfjkasdhfk");
-        row0.add("阿萨德和房价开始大家付款哈实践课程vhajksdqwdasdasd奥术大师大所多阿是大师大师的奥术大师大所大所大所多hfjkasdh萨德和房价开始大家付款哈实践课程vhajksdqwdasdasd奥术大师大所多阿是大师大师的奥术大师大所大所大所多hfjk萨德和房价开始大家付款哈实践课程vhajksdqwdasdasd奥术大师大所多阿是大师大师的奥术大师大所大所大所多hfjk萨德和房价开始大家付款哈实践课程vhajksdqwdasdasd奥术大师大所多阿是大师大师的奥术大师大所大所大所多hfjk萨德和房价开始大家付款哈实践课程vhajksdqwdasdasd奥术大师大所多阿是大师大师的奥术大师大所大所大所多hfjkfk");
-        row0.add("阿萨德和房价开始大家付款哈实践课程vhajksdhfjkasdhfk");
-        row0.add("阿萨德和房价开始大家付款哈实践课程vhajksdhfjkasdhfk");
-
-        List<String> row1 = new ArrayList<>();
-        row1.add("阿萨德\n九分裤垃圾收代理费空间啊");
-        row1.add("阿萨德和房价开始大家付款哈实践课程vhajksdhfjkasdhfk");
-        row1.add("阿萨德和房价开始大家付款哈实践课程vhajksdhfjkasdhfk");
-        row1.add("阿萨德和房价开始大家付款哈实践课程vhajksdhfjkasdhfk");
-        row1.add("阿萨德和房价开始大家付款哈实践课程vhajksdhfjkasdhfk");
-
-        List<String> row2 = new ArrayList<>();
-        row2.add("阿萨德\n九分裤垃圾收代理费空间啊");
-        row2.add("阿萨德和房价开始大家付款哈实践课程vhajksdhfjkasdhfk");
-        row2.add("阿萨德和房价开始大家付款哈实践课程vhajksdhfjkasdhfk");
-        row2.add("阿萨德和房价开始大家付款哈实践课程vhajksdhfjkasdhfk");
-        row2.add("阿萨德和房价开始大家付款哈实践课程vhajksdhfjkasdhfk");
-
-        testList.add(row0);
-        testList.add(row1);
-        testList.add(row2);
-
-        multiIndicatorMap.put("D00001非标资产投资情况", testList);
+//
+//        List<List> rowList=new ArrayList<>();
+//        List<String> row0=new ArrayList<>();
+//        row0.add("云瀚信息科技有限公司");
+//        row0.add("云瀚信息科技有限公司其他债权类资产非标理财产品211229-1");
+//        row0.add("266");
+//        row0.add("4.60");
+//        row0.add("其他债权类资产");
+//        List<String> row1=new ArrayList<>();
+//        row1.add("共青城云网创界投资管理合伙企业（有限合伙）");
+//        row1.add("共青城云网创界投资管理合伙企业（有限合伙）股票收益权非标理财产品20211116-1");
+//        row1.add("230");
+//        row1.add("5.13");
+//        row1.add("股票收益权");
+//        rowList.add(row0);
+//        rowList.add(row1);
+//        multiIndicatorMap.put("D00001关联交易情况_关联方承销的证券", rowList);
 
         // 处理if endif条件，除去不需要的表格和模板
-//        removeDocumentByCondition(singleIndicatorMap);
+        removeDocumentByCondition(singleIndicatorMap);
 
         String regEx = "\\$\\{(.*?)\\}";
         Pattern pattern = Pattern.compile(regEx);
@@ -132,22 +118,50 @@ public class WordUtils {
                 List<XWPFTable> tables = bodyElement.getBody().getTables();
                 // 注意这里只能这么拿table，每次处理一个，因为bodyElements.size()肯定大于表数，在下面判空即可
                 XWPFTable table = tables.get(curT);
+                boolean copyFlag = false;
                 if (table != null) {
                     int rowSize = table.getRows().size();
                     for (int k = 0; k < rowSize; k++) {
                         for (int l = 0; l < table.getRow(k).getTableCells().size(); l++) {
                             String cellString = table.getRow(k).getTableCells().get(l).getText();
                             if (cellString.contains("${")) {  // 说明需要替换内容
+                                if (k==0){
+                                    copyFlag = true;
+                                }
                                 // 获取key
                                 Matcher matcher = pattern.matcher(cellString);
                                 if (matcher.find()) {
                                     String keyString = matcher.group(1);
                                     if (singleIndicatorMap.containsKey(keyString)) {  // 单维度指标
-                                        table.getRow(k).getTableCells().get(l).removeParagraph(0);
-                                        table.getRow(k).getTableCells().get(l).setText((String) singleIndicatorMap.get(keyString));
+                                        XWPFTableCell tableCell = table.getRow(k).getTableCells().get(l);
+                                        String rowText = (String) singleIndicatorMap.get(keyString);
+                                        tableCell.removeParagraph(0);
+
+                                        XWPFParagraph paragraph1 = tableCell.addParagraph();
+
+                                        if(rowText.contains("\\n")) {
+                                            String[] text = rowText.split("\\\\n");
+                                            paragraph1.insertNewRun(0).setText(text[0]);
+
+                                            int xx = 1;
+                                            for(int p=1;p<text.length;p++){
+                                                // add break and insert new text
+                                                paragraph1.insertNewRun(xx).addBreak();//中断
+                                                paragraph1.insertNewRun(xx+1).setText(text[p]);
+                                                xx = xx + 2;
+                                            }
+                                        }else {
+                                            tableCell.setText(rowText);
+                                        }
+
+                                        // 设置居中
+                                        CTTc cttc = table.getRow(k).getTableCells().get(l).getCTTc();
+                                        CTTcPr ctPr = cttc.addNewTcPr();
+                                        ctPr.addNewVAlign().setVal(STVerticalJc.CENTER);
+                                        cttc.getPList().get(0).addNewPPr().addNewJc().setVal(STJc.CENTER);
                                     } else if (multiIndicatorMap.containsKey(keyString)) {  // 多维指标
                                         List<List<String>> sourceDataList = (List<List<String>>) multiIndicatorMap.get(keyString);
-                                        setSFMDFUNValue(table, k, l, sourceDataList);
+                                        setSFMDFUNValue(table, k, l, sourceDataList,copyFlag);
                                     } else {
                                         // 无此指标
                                         table.getRow(k).getTableCells().get(l).removeParagraph(0);
@@ -175,38 +189,6 @@ public class WordUtils {
         return new ByteArrayInputStream(baos.toByteArray());
     }
 
-    private  void forverseTableCells() {
-        for(XWPFTable table : document.getTables()) {//表格
-            for(XWPFTableRow row : table.getRows()) {//行
-                for(XWPFTableCell cell : row.getTableCells()) {//单元格 : 直接cell.setText()只会把文字加在原有的后面，删除不了文字
-                    addBreakInCell(cell);
-                }
-            }
-        }
-    }
-
-    private  void addBreakInCell(XWPFTableCell cell) {
-        if(cell.getText() != null && cell.getText().contains("\n")) {
-
-            for (XWPFParagraph p : cell.getParagraphs()) {
-                for (XWPFRun run : p.getRuns()) {//XWPFRun对象定义具有一组公共属性的文本区域
-                    if (run.getText(0) != null && run.getText(0).contains("\n")) {
-                        String[] lines = run.getText(0).split("\n");
-                        if (lines.length > 0) {
-                            run.setText(lines[0], 0); // set first line into XWPFRun
-                            for (int i = 1; i < lines.length; i++) {
-                                // add break and insert new text
-                                run.addCarriageReturn();//中断
-//                                    run.addCarriageReturn();//回车符，但是不起作用
-                                run.setText(lines[i]);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     /**
      * 填充多维表格数据
      * @param table 表格
@@ -214,7 +196,7 @@ public class WordUtils {
      * @param colStart 多维指标所在列
      * @param rowList 多维指标数据
      */
-    private  void setSFMDFUNValue(XWPFTable table, int rowStart, int colStart, List<List<String>> rowList) throws XmlException, IOException {
+    private void setSFMDFUNValue(XWPFTable table, int rowStart, int colStart, List<List<String>> rowList, boolean copyFlag) throws IOException, XmlException {
         if (rowList.size()==0) {
             // 多维指标为空，把这一行全部置空
             List<XWPFTableCell> tableCells = table.getRow(rowStart).getTableCells();
@@ -228,6 +210,7 @@ public class WordUtils {
                 cttc.getPList().get(0).addNewPPr().addNewJc().setVal(STJc.CENTER);
             }
         } else {
+            // 设置边框
             CTTblBorders borders = table.getCTTbl().getTblPr().addNewTblBorders();
             CTBorder hBorder = borders.addNewInsideH();
             hBorder.setVal(STBorder.Enum.forString("single"));  // 线条类型
@@ -259,70 +242,84 @@ public class WordUtils {
             bBorder.setSz(new BigInteger("1"));
             bBorder.setColor("000000");
 
-            for (int i = 0; i < rowList.size(); i++) {
-                XWPFTableRow tempRow = table.getRow(rowStart);
-                CTRow ctrow = CTRow.Factory.parse(tempRow.getCtRow().newInputStream());
-                XWPFTableRow newRow = new XWPFTableRow(ctrow, table);
-                for (int k = 0; k < rowList.get(i).size(); k++) {
-                    XWPFTableCell cell = newRow.getTableCells().get(k);
-                    cell.removeParagraph(0);
-                    String rowText = rowList.get(i).get(k);
-                    XWPFParagraph paragraph1 = cell.addParagraph();
-
-                    if(rowText.contains("\n")) {
-                        String[] text = rowText.split("\n");
-                        paragraph1.insertNewRun(0).setText(text[0]);
-
-                        int xx = 1;
-                        for(int p=1;p<text.length;p++){
-                            // add break and insert new text
-                            paragraph1.insertNewRun(xx).addBreak();//中断
-                            paragraph1.insertNewRun(xx+1).setText(text[p]);
-                            xx = xx + 2;
-                        }
-                    }else {
-                        cell.setText(rowText);
-                    }
-                }
-                table.addRow(newRow, i+rowStart+1);
+            if (copyFlag) {
+                for (int i = 0; i < rowList.size(); i++) {
+                    XWPFTableRow tempRow = table.getRow(rowStart);
+                    CTRow ctRow = CTRow.Factory.parse(tempRow.getCtRow().newInputStream());
+                    XWPFTableRow newRow = new XWPFTableRow(ctRow, table);
 
 //                XWPFTableRow tableRow=table.getRow(i+rowStart)==null?table.createRow():table.getRow(i+rowStart);
-//                for (int j = 0; j < rowList.get(i).size(); j++) {
+                    for (int j = 0; j < rowList.get(i).size(); j++) {
+                        XWPFTableCell tableCell = newRow.getTableCells().get(j);
+                        tableCell.removeParagraph(0);
 //                    XWPFTableCell tableCell=tableRow.getCell(j+colStart)==null?tableRow.createCell():tableRow.getCell(j+colStart);
-//                    tableCell.removeParagraph(0);
-//                    String rowText = rowList.get(i).get(j);
-//
-//                    XWPFParagraph paragraph1 = tableCell.addParagraph();
-//
-//                    if(rowText.contains("\n")) {
-//                        String[] text = rowText.split("\n");
-//                        paragraph1.insertNewRun(0).setText(text[0]);
-//
-//                        int xx = 1;
-//                        for(int p=1;p<text.length;p++){
-//                            // add break and insert new text
-//                            paragraph1.insertNewRun(xx).addBreak();//中断
-//                            paragraph1.insertNewRun(xx+1).setText(text[p]);
-//                            xx = xx + 2;
-//                        }
-//                    }else {
-//                        tableCell.setText(rowText);
-//                    }
-//
-//                    // 设置居中
-//                    CTTc cttc = tableCell.getCTTc();
-//                    CTTcPr ctPr = cttc.addNewTcPr();
-//                    ctPr.addNewVAlign().setVal(STVerticalJc.CENTER);
-//                    cttc.getPList().get(0).addNewPPr().addNewJc().setVal(STJc.CENTER);
-//
-//                }
+
+                        String rowText = rowList.get(i).get(j);
+                        XWPFParagraph paragraph1 = tableCell.addParagraph();
+
+                        if(rowText.contains("\\n")) {
+                            String[] text = rowText.split("\\\\n");
+                            paragraph1.insertNewRun(0).setText(text[0]);
+
+                            int xx = 1;
+                            for(int p=1;p<text.length;p++){
+                                // add break and insert new text
+                                paragraph1.insertNewRun(xx).addBreak();//中断
+                                paragraph1.insertNewRun(xx+1).setText(text[p]);
+                                xx = xx + 2;
+                            }
+                        }else {
+                            tableCell.setText(rowText);
+                        }
+                        // 设置居中
+                        CTTc cttc = tableCell.getCTTc();
+                        CTTcPr ctPr = cttc.addNewTcPr();
+                        ctPr.addNewVAlign().setVal(STVerticalJc.CENTER);
+                        cttc.getPList().get(0).addNewPPr().addNewJc().setVal(STJc.CENTER);
+
+                    }
+                    table.addRow(newRow, i+rowStart+1);
+                }
+                table.removeRow(rowStart);
+            } else {
+                for (int i = 0; i < rowList.size(); i++) {
+                    XWPFTableRow tableRow=table.getRow(i+rowStart)==null?table.createRow():table.getRow(i+rowStart);
+                    for (int j = 0; j < rowList.get(i).size(); j++) {
+                        XWPFTableCell tableCell=tableRow.getCell(j+colStart)==null?tableRow.createCell():tableRow.getCell(j+colStart);
+                        tableCell.removeParagraph(0);
+
+                        String rowText = rowList.get(i).get(j);
+                        XWPFParagraph paragraph1 = tableCell.addParagraph();
+
+                        if(rowText.contains("\\n")) {
+                            String[] text = rowText.split("\\\\n");
+                            paragraph1.insertNewRun(0).setText(text[0]);
+
+                            int xx = 1;
+                            for(int p=1;p<text.length;p++){
+                                // add break and insert new text
+                                paragraph1.insertNewRun(xx).addBreak();//中断
+                                paragraph1.insertNewRun(xx+1).setText(text[p]);
+                                xx = xx + 2;
+                            }
+                        }else {
+                            tableCell.setText(rowText);
+                        }
+                        // 设置居中
+                        CTTc cttc = tableCell.getCTTc();
+                        CTTcPr ctPr = cttc.addNewTcPr();
+                        ctPr.addNewVAlign().setVal(STVerticalJc.CENTER);
+                        cttc.getPList().get(0).addNewPPr().addNewJc().setVal(STJc.CENTER);
+
+                    }
+                }
             }
-            table.removeRow(rowStart);
+
         }
 
     }
 
-    public  void replaceParagraph(XWPFParagraph xWPFParagraph, Map<String, Object> parametersMap) {
+    public void replaceParagraph(XWPFParagraph xWPFParagraph, Map<String, Object> parametersMap) {
         List<XWPFRun> runs = xWPFParagraph.getRuns();
         String xWPFParagraphText = xWPFParagraph.getText();
         String regEx = "\\$\\{.+?\\}";
@@ -445,7 +442,7 @@ public class WordUtils {
 
     }
 
-    private  String getValueBykey(String key, Map<String, Object> map) {
+    private String getValueBykey(String key, Map<String, Object> map) {
         String returnValue="";
         if (key != null) {
             try {
@@ -460,7 +457,7 @@ public class WordUtils {
         return returnValue;
     }
 
-    private  boolean isIfExists(){
+    private boolean isIfExists(){
         List<IBodyElement> bodyElements = document.getBodyElements();// 所有对象（段落+表格）
         int templateBodySize = bodyElements.size();// 标记模板文件（段落+表格）总个数
         int curP = 0;// 当前操作段落对象的索引
@@ -481,7 +478,7 @@ public class WordUtils {
         return false;
     }
 
-    public  void removeDocumentByCondition(Map<String, Object> parametersMap){
+    public void removeDocumentByCondition(Map<String, Object> parametersMap){
 
         while (isIfExists()){
             removeDocument(parametersMap);
@@ -490,7 +487,7 @@ public class WordUtils {
     }
 
     // 循环调用直到文档中不包含含有if的段落
-    public  void removeDocument(Map<String, Object> parametersMap) {
+    public void removeDocument(Map<String, Object> parametersMap) {
 
         List<IBodyElement> bodyElements = document.getBodyElements();// 所有对象（段落+表格）
         int templateBodySize = bodyElements.size();// 标记模板文件（段落+表格）总个数
@@ -525,7 +522,7 @@ public class WordUtils {
                                 List<IBodyElement> subElements = new ArrayList<>(bodyElements.subList(a+1, bodyElements.size()));
                                 for (IBodyElement subElement : subElements) {
                                     if (BodyElementType.TABLE.equals(subElement.getElementType())){
-                                        XWPFTable table = body.getBody().getTableArray(curT+1);
+                                        XWPFTable table = body.getBody().getTableArray(curT);
                                         if (table != null) {
                                             copyTableInDocFooter(table);
                                             curT++;
@@ -554,7 +551,7 @@ public class WordUtils {
                                     List<IBodyElement> subElements = new ArrayList<>(bodyElements.subList(a+1, bodyElements.size()));
                                     for (IBodyElement subElement : subElements) {
                                         if (BodyElementType.TABLE.equals(subElement.getElementType())){
-                                            XWPFTable table = body.getBody().getTableArray(curT+1);
+                                            XWPFTable table = body.getBody().getTableArray(curT);
                                             if (table != null) {
                                                 curT++;
                                                 a++;
@@ -590,7 +587,6 @@ public class WordUtils {
                         if (copyFlag) {
                             copyParagraphInDocFooter(ph);
                         }
-
                     }
                     curP++;
                 }
@@ -602,7 +598,7 @@ public class WordUtils {
         }
     }
 
-    private  void copyParagraphInDocFooter(XWPFParagraph ph){
+    private void copyParagraphInDocFooter(XWPFParagraph ph){
         XWPFParagraph createParagraph = document.createParagraph();
         // 设置段落样式
         createParagraph.getCTP().setPPr(ph.getCTP().getPPr());
@@ -617,7 +613,7 @@ public class WordUtils {
         }
     }
 
-    private  void copyTableInDocFooter(XWPFTable templateTable){
+    private void copyTableInDocFooter(XWPFTable templateTable){
         List<XWPFTableRow> templateTableRows = templateTable.getRows();// 获取模板表格所有行
         XWPFTable newCreateTable = document.createTable();// 创建新表格,默认一行一列
         for (int i = 0; i < templateTableRows.size(); i++) {
@@ -627,7 +623,7 @@ public class WordUtils {
         newCreateTable.removeRow(0);// 移除多出来的第一行
     }
 
-    private  void copyTableRow(XWPFTableRow target, XWPFTableRow source) {
+    private void copyTableRow(XWPFTableRow target, XWPFTableRow source) {
 
         int tempRowCellsize = source.getTableCells().size();// 模板行的列数
         for (int i = 0; i < tempRowCellsize - 1; i++) {
@@ -641,7 +637,7 @@ public class WordUtils {
         }
     }
 
-    private  void copyTableCell(XWPFTableCell newTableCell, XWPFTableCell templateTableCell) {
+    private void copyTableCell(XWPFTableCell newTableCell, XWPFTableCell templateTableCell) {
         // 列属性
         newTableCell.getCTTc().setTcPr(templateTableCell.getCTTc().getTcPr());
         // 删除目标 targetCell 所有文本段落
@@ -655,7 +651,7 @@ public class WordUtils {
         }
     }
 
-    private  void copyParagraph(XWPFParagraph newParagraph, XWPFParagraph templateParagraph) {
+    private void copyParagraph(XWPFParagraph newParagraph, XWPFParagraph templateParagraph) {
         // 设置段落样式
         newParagraph.getCTP().setPPr(templateParagraph.getCTP().getPPr());
         // 添加Run标签
@@ -670,7 +666,7 @@ public class WordUtils {
 
     }
 
-    private  void copyRun(XWPFRun newRun, XWPFRun templateRun) {
+    private void copyRun(XWPFRun newRun, XWPFRun templateRun) {
         newRun.getCTR().setRPr(templateRun.getCTR().getRPr());
         // 设置文本
         newRun.setText(templateRun.text());
