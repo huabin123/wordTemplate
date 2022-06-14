@@ -84,23 +84,23 @@ public class WordUtils {
         List<Map<String, Object>> dataList = getIndexData(parametersMap);
         Map<String, Object> singleIndicatorMap = dataList.get(0);
         Map<String, Object> multiIndicatorMap = dataList.get(1);
-//
-//        List<List> rowList=new ArrayList<>();
-//        List<String> row0=new ArrayList<>();
-//        row0.add("云瀚信息科技有限公司");
-//        row0.add("云瀚信息科技有限公司其他债权类资产非标理财产品211229-1");
-//        row0.add("266");
-//        row0.add("4.60");
-//        row0.add("其他债权类资产");
-//        List<String> row1=new ArrayList<>();
-//        row1.add("共青城云网创界投资管理合伙企业（有限合伙）");
-//        row1.add("共青城云网创界投资管理合伙企业（有限合伙）股票收益权非标理财产品20211116-1");
-//        row1.add("230");
-//        row1.add("5.13");
-//        row1.add("股票收益权");
-//        rowList.add(row0);
-//        rowList.add(row1);
-//        multiIndicatorMap.put("D00001关联交易情况_关联方承销的证券", rowList);
+
+        List<List> rowList=new ArrayList<>();
+        List<String> row0=new ArrayList<>();
+        row0.add("云瀚信息科技有限公司");
+        row0.add("云瀚信息科技有限公司其他债权类资产非标理财产品211229-1");
+        row0.add("266");
+        row0.add("4.60");
+        row0.add("其他债权类资产");
+        List<String> row1=new ArrayList<>();
+        row1.add("共青城云网创界投资管理合伙企业（有限合伙）");
+        row1.add("共青城云网创界投资管理合伙企业（有限合伙）股票收益权非标理财产品20211116-1");
+        row1.add("230");
+        row1.add("5.13");
+        row1.add("股票收益权");
+        rowList.add(row0);
+        rowList.add(row1);
+        multiIndicatorMap.put("D00001关联交易情况_关联方承销的证券", rowList);
 
         // 处理if endif条件，除去不需要的表格和模板
         removeDocumentByCondition(singleIndicatorMap);
