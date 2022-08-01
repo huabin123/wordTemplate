@@ -115,19 +115,46 @@ public class CreateFileUtil {
         }
     }
 
-    public static void main(String[] args) {
-        // 创建目录
-        String dirName = "E:\\workspace\\project\\playground\\wordTemplate\\tempDoc";
-        CreateFileUtil.createDir(dirName);
-        // 创建文件
-        String fileName = dirName + "/temp2/tempFile.txt";
-        CreateFileUtil.createFile(fileName);
-        // 创建临时文件
-        String prefix = "temp";
-        String surfix = ".txt";
-        for (int i = 0; i < 10; i++) {
-            System.out.println("创建了临时文件: "
-                    + CreateFileUtil.createTempFile(prefix, surfix, dirName));
+    private static final int TEMP_DIR_ATTEMPTS = 10000;
+
+    public static File createTempDir() {
+        File baseDir = new File(System.getProperty("java.io.tmpdir"));
+        String baseName = System.currentTimeMillis() + "-";
+
+        for (int counter = 0; counter < TEMP_DIR_ATTEMPTS; counter++) {
+            File tempDir = new File(baseDir, baseName + counter);
+            if (tempDir.mkdir()) {
+                return tempDir;
+            }
         }
+        throw new IllegalStateException(
+                "Failed to create directory within "
+                        + TEMP_DIR_ATTEMPTS
+                        + " attempts (tried "
+                        + baseName
+                        + "0 to "
+                        + baseName
+                        + (TEMP_DIR_ATTEMPTS - 1)
+                        + ')');
+    }
+
+    public static void main(String[] args) throws IOException {
+//        // 创建目录
+//        String dirName = "E:\\workspace\\project\\playground\\wordTemplate\\tempDoc";
+//        CreateFileUtil.createDir(dirName);
+//        // 创建文件
+//        String fileName = dirName + "/temp2/tempFile.txt";
+//        CreateFileUtil.createFile(fileName);
+        // 创建临时文件夹
+        File tempDir = createTempDir();
+        System.out.println(tempDir.getCanonicalPath());
+        tempDir.delete();
+//        // 创建临时文件
+//        String prefix = "temp";
+//        String surfix = ".txt";
+//        for (int i = 0; i < 10; i++) {
+//            System.out.println("创建了临时文件: "
+//                    + CreateFileUtil.createTempFile(prefix, surfix, dirName));
+//        }
     }
 }
